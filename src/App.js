@@ -67,7 +67,9 @@ export default function StrudelDemo() {
   const handlePreprocess = () => {
     let proc_text = document.getElementById("proc").value;
     let proc_text_replaced = processText(proc_text, tracks);
-    globalEditor.setCode(proc_text_replaced);
+    if (globalEditor != null) {
+      globalEditor.setCode(proc_text_replaced);
+    }
   };
 
   const handleProcAndPlay = () => {
@@ -79,11 +81,15 @@ export default function StrudelDemo() {
 
   // Playback controls
   const handlePlay = () => {
-    globalEditor.evaluate();
+    if (globalEditor != null){
+      globalEditor.evaluate();
+    }
   };
 
   const handleStop = () => {
-    globalEditor.stop();
+     if (globalEditor != null){
+        globalEditor.stop();
+     }
   };
 
   const handleTrackChange = (track, value) => {
@@ -93,29 +99,27 @@ export default function StrudelDemo() {
   // Save to localStorage json
   const handleSave = () => {
     try {
-      localStorage.setItem("strudel-settings", JSON.stringify({tracks}));
+      localStorage.setItem("strudel-settings", JSON.stringify({ tracks }));
       alert("Settings saved!");
     } catch (error) {
       alert("Error saving settings");
     }
-
   };
 
   // Load from localStorage json
   const handleLoad = () => {
     try {
       const saved = localStorage.getItem("strudel-settings");
-    if (saved) {
-      const settings = JSON.parse(saved);
-      setTracks(settings.tracks);
-      alert("Settings loaded");
-    } else {
-      alert("No saved settings found!");
-    }
+      if (saved) {
+        const settings = JSON.parse(saved);
+        setTracks(settings.tracks);
+        alert("Settings loaded");
+      } else {
+        alert("No saved settings found!");
+      }
     } catch (error) {
       alert("Error loading settings");
     }
-
   };
 
   useEffect(() => {
@@ -187,15 +191,15 @@ export default function StrudelDemo() {
                 onPreprocess={handlePreprocess}
                 onProcAndPlay={handleProcAndPlay}
               />
-              <PlayButtons
-                onPlay={handlePlay}
-                onStop={handleStop} />
+              <PlayButtons onPlay={handlePlay} onStop={handleStop} />
 
               {/* DJ controls */}
-              <DJControls tracks={tracks}
+              <DJControls
+                tracks={tracks}
                 onTrackChange={handleTrackChange}
                 onSave={handleSave}
-                onLoad={handleLoad}/>
+                onLoad={handleLoad}
+              />
             </div>
           </div>
         </div>
