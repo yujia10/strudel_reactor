@@ -45,8 +45,7 @@ body {
 /* play buttons */
 
 .card.bg-dark {
-  background-color: #262626 !important;
-  color: #fff !important;
+  background-color: #262626;
 }
 
 .control-icon{
@@ -58,7 +57,6 @@ body {
 
 .control-icon:hover{
   transform: scale(1.1);
-  color: #d4ff99;
 }
 
 .status-pill {
@@ -85,13 +83,46 @@ body {
 }
 
 .proc-btn:hover {
-  border-color: #d4ff99;
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(173, 255, 47, 0.35);
 }
 
 .proc-icon {
   font-size: 1.2rem;
+}
+
+/* track controls */
+.form-check-input:checked {
+        background-color: #ff9900;
+        border-color: #ff9900;
+      }
+
+/* sliders */
+.form-range::-webkit-slider-thumb {
+  background-color: #ff9900;
+}
+
+.form-range::-webkit-slider-thumb:active {
+  background-color: #ffa733;
+}
+
+.form-range:focus::-webkit-slider-thumb {
+  background-color: #ffa733;
+  box-shadow: none;
+}
+
+.preset-btn{
+  background-color: #2a2a2a;
+  border: 2px solid #b9ff66;
+  border-radius: 12px;
+  padding: 6px 14px;
+  color: #b9ff66;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.preset-btn:hover {
+  transform: scale(1.05);
 }
 
 /* temperary - for testing layout */

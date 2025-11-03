@@ -1,5 +1,5 @@
 import "./App.css";
-import { useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { StrudelMirror } from "@strudel/codemirror";
 import { evalScope } from "@strudel/core";
 import { drawPianoroll } from "@strudel/draw";
@@ -24,33 +24,60 @@ const handleD3Data = (event) => {
   console.log(event.detail);
 };
 
-// export function ProcAndPlay() {
-//     if (globalEditor != null && globalEditor.repl.state.started == true) {
-//         console.log(globalEditor)
-//         Proc()
-//         globalEditor.evaluate();
-//     }
-// }
+// Mute selected track
+function muteTrack(text, trackName) {
+  const lines = text.split("\n");
 
-export function Proc() {
-  let proc_text = document.getElementById("proc").value;
-  let proc_text_replaced = proc_text.replaceAll("<p1_Radio>", ProcessText);
-  ProcessText(proc_text);
-  globalEditor.setCode(proc_text_replaced);
+  // update target track status
+  const updatedLines = lines.map((line) => {
+    if (line.trim().startsWith(`${trackName}:`)) {
+      return line.replace(`${trackName}:`, `_${trackName}:`);
+    }
+    return line;
+  });
+
+  return updatedLines.join("\n");
 }
 
-export function ProcessText(match, ...args) {
-  let replace = "";
-  if (document.getElementById("flexRadioDefault2").checked) {
-    replace = "_";
+// Preprocesses the source code by muting specific tracks
+function processText(source, tracks) {
+  let text = source;
+
+  for (let trackName in tracks) {
+    if (tracks[trackName] === "HUSH") {
+      text = muteTrack(text, trackName);
+    }
   }
 
-  return replace;
+  return text;
 }
 
 export default function StrudelDemo() {
   const hasRun = useRef(false);
 
+  // Add tracks status
+  const [tracks, setTracks] = useState({
+    bassline: "ON",
+    main_arp: "ON",
+    drums: "ON",
+    drums2: "ON",
+  });
+
+  //Preprocess controls
+  const handlePreprocess = () => {
+    let proc_text = document.getElementById("proc").value;
+    let proc_text_replaced = processText(proc_text, tracks);
+    globalEditor.setCode(proc_text_replaced);
+  };
+
+  const handleProcAndPlay = () => {
+    if (globalEditor != null) {
+      handlePreprocess();
+      globalEditor.evaluate();
+    }
+  };
+
+  // Playback controls
   const handlePlay = () => {
     globalEditor.evaluate();
   };
@@ -59,15 +86,36 @@ export default function StrudelDemo() {
     globalEditor.stop();
   };
 
-  const handlePreprocess = () => {
-    Proc();
+  const handleTrackChange = (track, value) => {
+    setTracks({ ...tracks, [track]: value });
   };
 
-  const handleProcAndPlay = () => {
-    if (globalEditor != null) {
-      Proc();
-      globalEditor.evaluate();
+  // Save to localStorage json
+  const handleSave = () => {
+    try {
+      localStorage.setItem("strudel-settings", JSON.stringify({tracks}));
+      alert("Settings saved!");
+    } catch (error) {
+      alert("Error saving settings");
     }
+
+  };
+
+  // Load from localStorage json
+  const handleLoad = () => {
+    try {
+      const saved = localStorage.getItem("strudel-settings");
+    if (saved) {
+      const settings = JSON.parse(saved);
+      setTracks(settings.tracks);
+      alert("Settings loaded");
+    } else {
+      alert("No saved settings found!");
+    }
+    } catch (error) {
+      alert("Error loading settings");
+    }
+
   };
 
   useEffect(() => {
@@ -108,7 +156,6 @@ export default function StrudelDemo() {
       });
 
       document.getElementById("proc").value = stranger_tune;
-      Proc();
     }
   }, []);
 
@@ -118,30 +165,37 @@ export default function StrudelDemo() {
       <main>
         <div className="container-fluid">
           <div className="row">
-            <div
-              className="col-md-8"
-              style={{ maxHeight: "50vh", overflowY: "auto" }}
-            >
-              <PreprocessArea />
+            <div className="col-md-8">
+              {/* Preprocess text area */}
+              <div
+                style={{ maxHeight: "50vh", overflowY: "auto" }}
+                className="mb-3"
+              >
+                <PreprocessArea />
+              </div>
+
+              {/* output */}
+              <div style={{ maxHeight: "50vh", overflowY: "auto" }}>
+                <div id="editor" />
+                <div id="output" />
+              </div>
             </div>
+
             <div className="col-md-4">
+              {/* Buttons */}
               <ProcButtons
                 onPreprocess={handlePreprocess}
                 onProcAndPlay={handleProcAndPlay}
               />
-              <PlayButtons onPlay={handlePlay} onStop={handleStop} />
-            </div>
-          </div>
-          <div className="row">
-            <div
-              className="col-md-8"
-              style={{ maxHeight: "50vh", overflowY: "auto" }}
-            >
-              <div id="editor" />
-              <div id="output" />
-            </div>
-            <div className="col-md-4">
-              <DJControls />
+              <PlayButtons
+                onPlay={handlePlay}
+                onStop={handleStop} />
+
+              {/* DJ controls */}
+              <DJControls tracks={tracks}
+                onTrackChange={handleTrackChange}
+                onSave={handleSave}
+                onLoad={handleLoad}/>
             </div>
           </div>
         </div>
