@@ -81,15 +81,15 @@ export default function StrudelDemo() {
 
   // Playback controls
   const handlePlay = () => {
-    if (globalEditor != null){
+    if (globalEditor != null) {
       globalEditor.evaluate();
     }
   };
 
   const handleStop = () => {
-     if (globalEditor != null){
-        globalEditor.stop();
-     }
+    if (globalEditor != null) {
+      globalEditor.stop();
+    }
   };
 
   const handleTrackChange = (track, value) => {
@@ -160,8 +160,25 @@ export default function StrudelDemo() {
       });
 
       document.getElementById("proc").value = stranger_tune;
+
+      // Initiate code output
+      if (globalEditor != null) {
+        const initialCode = processText(stranger_tune, tracks);
+        globalEditor.setCode(initialCode);
+      }
     }
   }, []);
+
+  // Change tracks dynamically
+  useEffect(() => {
+    if (globalEditor != null && globalEditor.repl.state.started == true) {
+      const newCode = processText(stranger_tune, tracks);
+
+      globalEditor.setCode(newCode);
+
+      globalEditor.evaluate();
+    }
+  }, [tracks]);
 
   return (
     <div>
