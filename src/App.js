@@ -181,8 +181,8 @@ export default function StrudelDemo() {
   }, [tracks]);
 
   return (
-    <div>
-      <h2>Strudel Demo</h2>
+    <div className="px-3">
+      <h2 className="my-3 text-center">Strudel Demo</h2>
       <main>
         <div className="container-fluid">
           <div className="row">
@@ -196,7 +196,7 @@ export default function StrudelDemo() {
               </div>
 
               {/* output */}
-              <div style={{ maxHeight: "50vh", overflowY: "auto" }}>
+              <div style={{ maxHeight: "50vh", overflowY: "auto" }} className="mb-3">
                 <div id="editor" />
                 <div id="output" />
               </div>
