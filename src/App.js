@@ -39,14 +39,53 @@ function muteTrack(text, trackName) {
   return updatedLines.join("\n");
 }
 
+// Adjust volume based on slider change
+function controlVolume(text, volume) {
+  let outputText = text;
+  let regex = /[a-zA-Z0-9_]+:\s*\n[\s\S]+?\r?\n(?=[a-zA-Z0-9_]*[:/])/gm;
+  let matches = [];
+  let m;
+
+  while ((m = regex.exec(outputText)) !== null) {
+    if (m.index === regex.lastIndex){
+      regex.lastIndex++;
+    }
+    m.forEach((match, groupIndex) => {
+      matches.push(match);
+    });
+  }
+
+  let matches2 = matches.map(
+    match =>
+      match.replaceAll(
+        /(?<!post)gain\(([\d.]+)\)/g,
+        (match, captureGroup) => `gain(${captureGroup}*${volume})`
+      )
+  );
+
+  let replacedText = matches.reduce(
+    (text, original, i) => text.replaceAll(original, matches2[i]),
+    outputText
+  );
+
+  return replacedText;
+}
+
+
 // Preprocesses the source code by muting specific tracks
-function processText(source, tracks) {
+function processText(source, tracks, volume) {
   let text = source;
 
+  // search for track set to hush
   for (let trackName in tracks) {
     if (tracks[trackName] === "HUSH") {
       text = muteTrack(text, trackName);
     }
+  }
+
+  // Set global gain
+  if (volume !== 1) {
+    text = controlVolume(text, volume);
   }
 
   return text;
@@ -63,6 +102,9 @@ export default function StrudelDemo() {
     drums2: "ON",
   });
 
+  // Add volume status
+  const [volume, setVolume] = useState(1)
+
   //Preprocess controls
   const handlePreprocess = () => {
     let proc_text = document.getElementById("proc").value;
@@ -72,6 +114,7 @@ export default function StrudelDemo() {
     }
   };
 
+  //Preprocess and play
   const handleProcAndPlay = () => {
     if (globalEditor != null) {
       handlePreprocess();
@@ -92,6 +135,7 @@ export default function StrudelDemo() {
     }
   };
 
+  // Change track status
   const handleTrackChange = (track, value) => {
     setTracks({ ...tracks, [track]: value });
   };
@@ -163,7 +207,7 @@ export default function StrudelDemo() {
 
       // Initiate code output
       if (globalEditor != null) {
-        const initialCode = processText(stranger_tune, tracks);
+        const initialCode = processText(stranger_tune, tracks, 1);
         globalEditor.setCode(initialCode);
       }
     }
@@ -171,14 +215,16 @@ export default function StrudelDemo() {
 
   // Change tracks dynamically
   useEffect(() => {
-    if (globalEditor != null && globalEditor.repl.state.started == true) {
-      const newCode = processText(stranger_tune, tracks);
+    // Only changes while music is playing
+    if (globalEditor != null && globalEditor.repl.state.started === true) {
+      const newCode = processText(stranger_tune, tracks, volume);
 
       globalEditor.setCode(newCode);
 
       globalEditor.evaluate();
     }
-  }, [tracks]);
+  }, [tracks,volume]);
+
 
   return (
     <div className="px-3">
