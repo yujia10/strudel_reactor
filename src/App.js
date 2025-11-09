@@ -260,6 +260,8 @@ export default function StrudelDemo() {
               <DJControls
                 tracks={tracks}
                 onTrackChange={handleTrackChange}
+                volume={volume}
+                onVolumeChange={(e)=>setVolume(e.target.value)}
                 onSave={handleSave}
                 onLoad={handleLoad}
               />

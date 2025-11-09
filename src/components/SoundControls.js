@@ -1,7 +1,6 @@
 import { useState } from 'react';
 
-function SoundControls() {
-  const [volume, setVolume] = useState(60);
+function SoundControls({volume, onVolumeChange}) {
   const [speed, setSpeed] = useState(1);
 
   return (
@@ -10,17 +9,16 @@ function SoundControls() {
       <div className="mb-2">
         <label htmlFor="volumeRange" className="form-label fw-semibold d-flex">
           <span className="me-3">Volume:</span>
-          <span>{volume}</span>
+          <span>{volume}x</span>
         </label>
         <input
           type="range"
           className="form-range"
           id="volumeRange"
           min="0"
-          max="100"
-          step="1"
-          defaultValue="60"
-          onChange={(e) => setVolume(e.target.value)}
+          max="2"
+          step="0.1"
+          onChange={onVolumeChange}
         />
       </div>
 
