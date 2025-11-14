@@ -2,13 +2,18 @@ import TrackControls from "./TrackControls";
 import SoundControls from "./SoundControls";
 import EffectsControls from "./EffectsControls";
 
-function DJControls({tracks, onTrackChange, onSave, onLoad, volume, onVolumeChange}) {
+function DJControls({tracks, onTrackChange, onSave, onLoad, volume, onVolumeChange, speed, onSpeedChange}) {
 
   return (
     <div className="card bg-dark text-light border-0 rounded-4 px-5 py-4 mt-3">
 
       <TrackControls tracks={tracks} onTrackChange={onTrackChange}/>
-      <SoundControls volume={volume} onVolumeChange={onVolumeChange}/>
+      <SoundControls
+      volume={volume}
+      onVolumeChange={onVolumeChange}
+      speed={speed}
+      onSpeedChange={onSpeedChange}
+      />
       <EffectsControls />
 
       <div className="d-flex gap-3 mt-3 justify-content-end">

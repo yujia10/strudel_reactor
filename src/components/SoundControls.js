@@ -1,7 +1,5 @@
-import { useState } from 'react';
 
-function SoundControls({volume, onVolumeChange}) {
-  const [speed, setSpeed] = useState(1);
+function SoundControls({volume, onVolumeChange, speed, onSpeedChange}) {
 
   return (
     <>
@@ -33,10 +31,9 @@ function SoundControls({volume, onVolumeChange}) {
           className="form-range"
           id="speedRange"
           min="0.5"
-          max="2"
-          step="0.25"
-          defaultValue="1"
-          onChange={(e) => setSpeed(e.target.value)}
+          max="1.5"
+          step="0.1"
+          onChange={onSpeedChange}
         />
       </div>
     </>
