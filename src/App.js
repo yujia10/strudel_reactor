@@ -47,7 +47,7 @@ function controlVolume(text, volume) {
   let m;
 
   while ((m = regex.exec(outputText)) !== null) {
-    if (m.index === regex.lastIndex){
+    if (m.index === regex.lastIndex) {
       regex.lastIndex++;
     }
     m.forEach((match, groupIndex) => {
@@ -55,12 +55,11 @@ function controlVolume(text, volume) {
     });
   }
 
-  let matches2 = matches.map(
-    match =>
-      match.replaceAll(
-        /(?<!post)gain\(([\d.]+)\)/g,
-        (match, captureGroup) => `gain(${captureGroup}*${volume})`
-      )
+  let matches2 = matches.map((match) =>
+    match.replaceAll(
+      /(?<!post)gain\(([\d.]+)\)/g,
+      (match, captureGroup) => `gain(${captureGroup}*${volume})`
+    )
   );
 
   let replacedText = matches.reduce(
@@ -71,9 +70,27 @@ function controlVolume(text, volume) {
   return replacedText;
 }
 
+function controlSpeed(text, speed) {
+  const cpsRegex = /setcps\(([\d./]+)\)/;
+  // find matched text
+  const match = text.match(cpsRegex);
+  if (!match) return text;
+
+  // get first number
+  const expression = match[1];
+  const parts = expression.split("/");
+
+  // replace bpm value
+  const baseBpm = parts[0];
+  parts[0] = `${baseBpm} * ${speed}`;
+
+  const newSetcps = `setcps(${parts.join("/")})`;
+
+  return text.replace(cpsRegex, newSetcps);
+}
 
 // Preprocesses the source code by muting specific tracks
-function processText(source, tracks, volume) {
+function processText(source, tracks, volume, speed) {
   let text = source;
 
   // search for track set to hush
@@ -86,6 +103,10 @@ function processText(source, tracks, volume) {
   // Set global gain
   if (volume !== 1) {
     text = controlVolume(text, volume);
+  }
+
+  if (speed !== 1) {
+    text = controlSpeed(text, speed);
   }
 
   return text;
@@ -103,12 +124,15 @@ export default function StrudelDemo() {
   });
 
   // Add volume status
-  const [volume, setVolume] = useState(1)
+  const [volume, setVolume] = useState(1);
+
+  // Add speed status
+  const [speed, setSpeed] = useState(1);
 
   //Preprocess controls
   const handlePreprocess = () => {
     let proc_text = document.getElementById("proc").value;
-    let proc_text_replaced = processText(proc_text, tracks);
+    let proc_text_replaced = processText(proc_text, tracks, volume, speed);
     if (globalEditor != null) {
       globalEditor.setCode(proc_text_replaced);
     }
@@ -207,7 +231,7 @@ export default function StrudelDemo() {
 
       // Initiate code output
       if (globalEditor != null) {
-        const initialCode = processText(stranger_tune, tracks, 1);
+        const initialCode = processText(stranger_tune, tracks, volume, speed);
         globalEditor.setCode(initialCode);
       }
     }
@@ -217,14 +241,13 @@ export default function StrudelDemo() {
   useEffect(() => {
     // Only changes while music is playing
     if (globalEditor != null && globalEditor.repl.state.started === true) {
-      const newCode = processText(stranger_tune, tracks, volume);
+      const newCode = processText(stranger_tune, tracks, volume, speed);
 
       globalEditor.setCode(newCode);
 
       globalEditor.evaluate();
     }
-  }, [tracks,volume]);
-
+  }, [tracks, volume, speed]);
 
   return (
     <div className="px-3">
@@ -242,7 +265,10 @@ export default function StrudelDemo() {
               </div>
 
               {/* output */}
-              <div style={{ maxHeight: "50vh", overflowY: "auto" }} className="mb-3">
+              <div
+                style={{ maxHeight: "50vh", overflowY: "auto" }}
+                className="mb-3"
+              >
                 <div id="editor" />
                 <div id="output" />
               </div>
@@ -261,7 +287,9 @@ export default function StrudelDemo() {
                 tracks={tracks}
                 onTrackChange={handleTrackChange}
                 volume={volume}
-                onVolumeChange={(e)=>setVolume(e.target.value)}
+                onVolumeChange={(e) => setVolume(e.target.value)}
+                speed={speed}
+                onSpeedChange={(e) => setSpeed(e.target.value)}
                 onSave={handleSave}
                 onLoad={handleLoad}
               />
