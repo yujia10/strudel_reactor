@@ -1,4 +1,4 @@
-function EffectsControls() {
+function EffectsControls({ lpf, onLpfChange }) {
   return (
     <>
       <div className="my-3">
@@ -42,7 +42,12 @@ function EffectsControls() {
             <input
               type="number"
               className="form-control form-control-sm text-center"
-              style={{ width: "60px" }}
+              style={{ width: "70px" }}
+              min="100"
+              max="10000"
+              step="100"
+              value={lpf.bassline}
+              onChange={(e) => onLpfChange("bassline", e.target.value)}
             />
           </div>
 
@@ -52,7 +57,12 @@ function EffectsControls() {
             <input
               type="number"
               className="form-control form-control-sm text-center"
-              style={{ width: "60px" }}
+              style={{ width: "70px" }}
+              min="100"
+              max="10000"
+              step="100"
+              value={lpf.main_arp}
+              onChange={(e) => onLpfChange("main_arp", e.target.value)}
             />
           </div>
 
@@ -62,7 +72,12 @@ function EffectsControls() {
             <input
               type="number"
               className="form-control form-control-sm text-center"
-              style={{ width: "60px" }}
+              style={{ width: "70px" }}
+              min="100"
+              max="10000"
+              step="100"
+              value={lpf.drums}
+              onChange={(e) => onLpfChange("drums", e.target.value)}
             />
           </div>
 
@@ -72,7 +87,7 @@ function EffectsControls() {
             <input
               disabled
               className="form-control form-control-sm text-center bg-secondary"
-              style={{ width: "60px" }}
+              style={{ width: "70px" }}
               placeholder="—"
             />
           </div>

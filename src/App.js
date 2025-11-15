@@ -71,9 +71,9 @@ function controlVolume(text, volume) {
 }
 
 function controlSpeed(text, speed) {
-  const cpsRegex = /setcps\(([\d./]+)\)/;
+  const regex = /setcps\(([\d./]+)\)/;
   // find matched text
-  const match = text.match(cpsRegex);
+  const match = text.match(regex);
   if (!match) return text;
 
   // get first number
@@ -86,11 +86,34 @@ function controlSpeed(text, speed) {
 
   const newSetcps = `setcps(${parts.join("/")})`;
 
-  return text.replace(cpsRegex, newSetcps);
+  return text.replace(regex, newSetcps);
 }
 
-// Preprocesses the source code by muting specific tracks
-function processText(source, tracks, volume, speed) {
+function controlLpf(text, trackName, value) {
+  if (!value) return text
+  // Match track blocks
+  let regex = /[a-zA-Z0-9_]+:\s*\n[\s\S]+?\r?\n(?=[a-zA-Z0-9_]*[:/])/gm;
+  let matches = [];
+  let m;
+
+  while ((m = regex.exec(text)) !== null) {
+    if (m.index === regex.lastIndex) {
+      regex.lastIndex++;
+    }
+    matches.push(m[0]);
+  }
+  // Find target track block
+  const targetBlock = matches.find(block => block.trim().startsWith(`${trackName}:`));
+
+  if (!targetBlock || !targetBlock.includes(".lpf(") ) return text;
+  // Replace .lpf() in the block
+  const updatedBlock = targetBlock.replace(/\.lpf\([\d.]+\)/g, `.lpf(${value})`);
+  // Replace original block
+  return text.replace(targetBlock, updatedBlock);
+}
+
+// Preprocesses the source code
+function processText(source, tracks, volume, speed, lpf) {
   let text = source;
 
   // search for track set to hush
@@ -105,8 +128,13 @@ function processText(source, tracks, volume, speed) {
     text = controlVolume(text, volume);
   }
 
+  // Set global speed
   if (speed !== 1) {
     text = controlSpeed(text, speed);
+  }
+
+  for (let trackName in lpf) {
+    text = controlLpf(text, trackName, lpf[trackName]);
   }
 
   return text;
@@ -129,10 +157,18 @@ export default function StrudelDemo() {
   // Add speed status
   const [speed, setSpeed] = useState(1);
 
+  // Add lpf status
+  const [lpf, setLpf] = useState({
+    bassline: 700,
+    main_arp: 300,
+    drums: 7000,
+    drums2: null,
+  });
+
   //Preprocess controls
   const handlePreprocess = () => {
     let proc_text = document.getElementById("proc").value;
-    let proc_text_replaced = processText(proc_text, tracks, volume, speed);
+    let proc_text_replaced = processText(proc_text, tracks, volume, speed, lpf);
     if (globalEditor != null) {
       globalEditor.setCode(proc_text_replaced);
     }
@@ -162,6 +198,11 @@ export default function StrudelDemo() {
   // Change track status
   const handleTrackChange = (track, value) => {
     setTracks({ ...tracks, [track]: value });
+  };
+
+  // Change lpf status
+  const handleLpfChange = (track, value) => {
+    setLpf({ ...lpf, [track]: value });
   };
 
   // Save to localStorage json
@@ -231,23 +272,29 @@ export default function StrudelDemo() {
 
       // Initiate code output
       if (globalEditor != null) {
-        const initialCode = processText(stranger_tune, tracks, volume, speed);
+        const initialCode = processText(
+          stranger_tune,
+          tracks,
+          volume,
+          speed,
+          lpf
+        );
         globalEditor.setCode(initialCode);
       }
     }
   }, []);
 
-  // Change tracks dynamically
+  // Change tracks and effects dynamically
   useEffect(() => {
     // Only changes while music is playing
     if (globalEditor != null && globalEditor.repl.state.started === true) {
-      const newCode = processText(stranger_tune, tracks, volume, speed);
+      const newCode = processText(stranger_tune, tracks, volume, speed, lpf);
 
       globalEditor.setCode(newCode);
 
       globalEditor.evaluate();
     }
-  }, [tracks, volume, speed]);
+  }, [tracks, volume, speed, lpf]);
 
   return (
     <div className="px-3">
@@ -290,6 +337,8 @@ export default function StrudelDemo() {
                 onVolumeChange={(e) => setVolume(e.target.value)}
                 speed={speed}
                 onSpeedChange={(e) => setSpeed(e.target.value)}
+                lpf={lpf}
+                onLpfChange={handleLpfChange}
                 onSave={handleSave}
                 onLoad={handleLoad}
               />
