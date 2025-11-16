@@ -174,11 +174,3 @@ button {
 .accordion-button::after {
   filter: brightness(0) invert(1);
 }
-
-
-/* temperary - for testing layout */
-#roll {
-  width: 100%;
-  height: 200px;
-  background-color: pink;
-}
