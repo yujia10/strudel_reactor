@@ -1,32 +1,20 @@
-function EffectsControls({ lpf, onLpfChange }) {
+function EffectsControls({ jux, onJuxChange, lpf, onLpfChange }) {
   return (
     <>
       <div className="my-3">
         <div className="row row-cols-2 g-3">
-          {/* Stereo Spread */}
+          {/* Mirror Effect */}
           <div className="col d-flex align-items-center justify-content-between">
             <div className="form-check">
               <input
                 className="form-check-input me-2"
                 type="checkbox"
-                id="spread"
+                id="rev"
+                checked={jux}
+                onChange={(e) => onJuxChange(e.target.checked)}
               />
-              <label className="form-check-label" htmlFor="spread">
-                Stereo
-              </label>
-            </div>
-          </div>
-
-          {/* Distortion */}
-          <div className="col d-flex align-items-center justify-content-between">
-            <div className="form-check">
-              <input
-                className="form-check-input me-2"
-                type="checkbox"
-                id="distortion"
-              />
-              <label className="form-check-label" htmlFor="distortion">
-                Distortion
+              <label className="form-check-label fw-semibold" htmlFor="rev">
+                Stereo Effect
               </label>
             </div>
           </div>

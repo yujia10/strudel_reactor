@@ -90,7 +90,7 @@ function controlSpeed(text, speed) {
 }
 
 function controlLpf(text, trackName, value) {
-  if (!value) return text
+  if (!value) return text;
   // Match track blocks
   let regex = /[a-zA-Z0-9_]+:\s*\n[\s\S]+?\r?\n(?=[a-zA-Z0-9_]*[:/])/gm;
   let matches = [];
@@ -103,17 +103,27 @@ function controlLpf(text, trackName, value) {
     matches.push(m[0]);
   }
   // Find target track block
-  const targetBlock = matches.find(block => block.trim().startsWith(`${trackName}:`));
+  const targetBlock = matches.find((block) =>
+    block.trim().startsWith(`${trackName}:`)
+  );
 
-  if (!targetBlock || !targetBlock.includes(".lpf(") ) return text;
+  if (!targetBlock || !targetBlock.includes(".lpf(")) return text;
   // Replace .lpf() in the block
-  const updatedBlock = targetBlock.replace(/\.lpf\([\d.]+\)/g, `.lpf(${value})`);
+  const updatedBlock = targetBlock.replace(
+    /\.lpf\([\d.]+\)/g,
+    `.lpf(${value})`
+  );
   // Replace original block
   return text.replace(targetBlock, updatedBlock);
 }
 
+// Remove .jux(rev)
+function removeJuxRev(text) {
+  return text.replace(/\.jux\(rev\)/g, "");
+}
+
 // Preprocesses the source code
-function processText(source, tracks, volume, speed, lpf) {
+function processText(source, tracks, volume, speed, lpf, jux) {
   let text = source;
 
   // search for track set to hush
@@ -133,8 +143,14 @@ function processText(source, tracks, volume, speed, lpf) {
     text = controlSpeed(text, speed);
   }
 
+  // Set lpf
   for (let trackName in lpf) {
     text = controlLpf(text, trackName, lpf[trackName]);
+  }
+
+  // Control jux(rev)
+  if (!jux) {
+    text = removeJuxRev(text);
   }
 
   return text;
@@ -165,10 +181,20 @@ export default function StrudelDemo() {
     drums2: null,
   });
 
+  // Add jux status
+  const [jux, setJux] = useState(true);
+
   //Preprocess controls
   const handlePreprocess = () => {
     let proc_text = document.getElementById("proc").value;
-    let proc_text_replaced = processText(proc_text, tracks, volume, speed, lpf);
+    let proc_text_replaced = processText(
+      proc_text,
+      tracks,
+      volume,
+      speed,
+      lpf,
+      jux
+    );
     if (globalEditor != null) {
       globalEditor.setCode(proc_text_replaced);
     }
@@ -203,6 +229,11 @@ export default function StrudelDemo() {
   // Change lpf status
   const handleLpfChange = (track, value) => {
     setLpf({ ...lpf, [track]: value });
+  };
+
+  // Change jux(rev) states
+  const handleJuxChange = (checked) => {
+    setJux(checked);
   };
 
   // Save to localStorage json
@@ -277,7 +308,8 @@ export default function StrudelDemo() {
           tracks,
           volume,
           speed,
-          lpf
+          lpf,
+          jux
         );
         globalEditor.setCode(initialCode);
       }
@@ -288,13 +320,20 @@ export default function StrudelDemo() {
   useEffect(() => {
     // Only changes while music is playing
     if (globalEditor != null && globalEditor.repl.state.started === true) {
-      const newCode = processText(stranger_tune, tracks, volume, speed, lpf);
+      const newCode = processText(
+        stranger_tune,
+        tracks,
+        volume,
+        speed,
+        lpf,
+        jux
+      );
 
       globalEditor.setCode(newCode);
 
       globalEditor.evaluate();
     }
-  }, [tracks, volume, speed, lpf]);
+  }, [tracks, volume, speed, lpf, jux]);
 
   return (
     <div className="px-3">
@@ -339,6 +378,8 @@ export default function StrudelDemo() {
                 onSpeedChange={(e) => setSpeed(e.target.value)}
                 lpf={lpf}
                 onLpfChange={handleLpfChange}
+                jux={jux}
+                onJuxChange={handleJuxChange}
                 onSave={handleSave}
                 onLoad={handleLoad}
               />

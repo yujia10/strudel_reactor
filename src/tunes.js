@@ -48,6 +48,7 @@ note(pick(basslines, bass))
 .room(0.4)
 .gain(1)
 .postgain(pick(gain_patterns, pattern))
+.jux(rev)
 
 
 main_arp:
@@ -59,6 +60,7 @@ note(pick(arpeggiator1, "<0 1 2 3>/2"))
 .lpenv(3.3)
 .gain(1)
 .postgain(pick(gain_patterns, pattern))
+.jux(rev)
 
 
 drums:

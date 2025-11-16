@@ -13,6 +13,8 @@ function DJControls({
   onSpeedChange,
   lpf,
   onLpfChange,
+  jux,
+  onJuxChange,
 }) {
   return (
     <div className="card bg-dark text-light border-0 rounded-4 px-5 py-4 mt-3">
@@ -23,7 +25,12 @@ function DJControls({
         speed={speed}
         onSpeedChange={onSpeedChange}
       />
-      <EffectsControls lpf={lpf} onLpfChange={onLpfChange} />
+      <EffectsControls
+        jux={jux}
+        onJuxChange={onJuxChange}
+        lpf={lpf}
+        onLpfChange={onLpfChange}
+      />
 
       <div className="d-flex gap-3 mt-3 justify-content-end">
         <button className="preset-btn" onClick={onSave}>
