@@ -16,25 +16,51 @@ function DJControls({
   jux,
   onJuxChange,
   degrade,
-  onDegradeChange
+  onDegradeChange,
 }) {
   return (
     <div className="card bg-dark text-light border-0 rounded-4 px-5 py-4 mt-3">
-      <TrackControls tracks={tracks} onTrackChange={onTrackChange} />
       <SoundControls
         volume={volume}
         onVolumeChange={onVolumeChange}
         speed={speed}
         onSpeedChange={onSpeedChange}
       />
-      <EffectsControls
-        jux={jux}
-        onJuxChange={onJuxChange}
-        degrade={degrade}
-        onDegradeChange={onDegradeChange}
-        lpf={lpf}
-        onLpfChange={onLpfChange}
-      />
+      <TrackControls tracks={tracks} onTrackChange={onTrackChange} />
+      <div className="accordion accordion-flush mt-3" id="controlsAccordion">
+        {/* Effects Controls */}
+        <div className="accordion-item">
+          <h2 className="accordion-header" id="effectControlsHeader">
+            <button
+              className="accordion-button collapsed"
+              type="button"
+              data-bs-toggle="collapse"
+              data-bs-target="#effectControls"
+              aria-expanded="false"
+              aria-controls="effectControls"
+            >
+              Advanced Effects
+            </button>
+          </h2>
+          <div
+            id="effectControls"
+            className="accordion-collapse collapse"
+            aria-labelledby="effectControlsHeader"
+            data-bs-parent="#controlsAccordion"
+          >
+            <div className="accordion-body">
+              <EffectsControls
+                jux={jux}
+                onJuxChange={onJuxChange}
+                degrade={degrade}
+                onDegradeChange={onDegradeChange}
+                lpf={lpf}
+                onLpfChange={onLpfChange}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
 
       <div className="d-flex gap-3 mt-3 justify-content-end">
         <button className="preset-btn" onClick={onSave}>

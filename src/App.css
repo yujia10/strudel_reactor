@@ -141,6 +141,41 @@ button {
   transform: scale(1.05);
 }
 
+/* accordion */
+.accordion-flush .accordion-item {
+  background-color: #1b1b1b;
+  border: none;
+}
+
+.accordion-button,
+.accordion-button:not(.collapsed),
+.accordion-button.collapsed {
+  background-color: #1b1b1b;
+  color: #b9ff66;
+  font-weight: 600;
+  padding: 1rem 0.5rem;
+  border: none;
+  box-shadow: none;
+  outline: none;
+}
+
+.accordion-button:focus {
+  box-shadow: none;
+  outline: none;
+  color: #b9ff66;
+}
+
+.accordion-body {
+  background-color: #1b1b1b;
+  color: white;
+  border: none;
+}
+
+.accordion-button::after {
+  filter: brightness(0) invert(1);
+}
+
+
 /* temperary - for testing layout */
 #roll {
   width: 100%;
