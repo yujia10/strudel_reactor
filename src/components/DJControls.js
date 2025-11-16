@@ -15,6 +15,8 @@ function DJControls({
   onLpfChange,
   jux,
   onJuxChange,
+  degrade,
+  onDegradeChange
 }) {
   return (
     <div className="card bg-dark text-light border-0 rounded-4 px-5 py-4 mt-3">
@@ -28,6 +30,8 @@ function DJControls({
       <EffectsControls
         jux={jux}
         onJuxChange={onJuxChange}
+        degrade={degrade}
+        onDegradeChange={onDegradeChange}
         lpf={lpf}
         onLpfChange={onLpfChange}
       />

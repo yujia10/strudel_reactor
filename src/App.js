@@ -122,8 +122,52 @@ function removeJuxRev(text) {
   return text.replace(/\.jux\(rev\)/g, "");
 }
 
+// Add or delete .degrade()
+function controlDegrade(
+  text,
+  degrade,
+  targetTracks = ["bassline", "main_arp"]
+) {
+  if (!degrade) {
+    return text.replace(/\.degrade\(\)/g, "");
+  }
+
+  // add .degrade() for specified tracks
+  let outputText = text;
+  let regex = /[a-zA-Z0-9_]+:\s*\n[\s\S]+?\r?\n(?=[a-zA-Z0-9_]*[:/])/gm;
+  let matches = [];
+  let m;
+
+  while ((m = regex.exec(outputText)) !== null) {
+    if (m.index === regex.lastIndex) {
+      regex.lastIndex++;
+    }
+    matches.push(m[0]);
+  }
+
+  let matches2 = matches.map((match) => {
+    // Check target track
+    const isTargetTrack = targetTracks.some((trackName) =>
+      match.trim().startsWith(`${trackName}:`)
+    );
+
+    if (isTargetTrack && !match.includes(".degrade()")) {
+      // Add .degrade() as last line
+      return match.replace(/(\.[a-z]+\([^)]*\))(\s*)$/, "$1\n.degrade()$2");
+    }
+    return match;
+  });
+
+  let replacedText = matches.reduce(
+    (text, original, i) => text.replace(original, matches2[i]),
+    outputText
+  );
+
+  return replacedText;
+}
+
 // Preprocesses the source code
-function processText(source, tracks, volume, speed, lpf, jux) {
+function processText(source, tracks, volume, speed, lpf, jux, degrade) {
   let text = source;
 
   // search for track set to hush
@@ -147,6 +191,9 @@ function processText(source, tracks, volume, speed, lpf, jux) {
   for (let trackName in lpf) {
     text = controlLpf(text, trackName, lpf[trackName]);
   }
+
+  // Control degrage effect
+  text = controlDegrade(text, degrade);
 
   // Control jux(rev)
   if (!jux) {
@@ -184,6 +231,9 @@ export default function StrudelDemo() {
   // Add jux status
   const [jux, setJux] = useState(true);
 
+  // Add degrade status
+  const [degrade, setDegrade] = useState(false);
+
   //Preprocess controls
   const handlePreprocess = () => {
     let proc_text = document.getElementById("proc").value;
@@ -193,7 +243,8 @@ export default function StrudelDemo() {
       volume,
       speed,
       lpf,
-      jux
+      jux,
+      degrade
     );
     if (globalEditor != null) {
       globalEditor.setCode(proc_text_replaced);
@@ -234,6 +285,11 @@ export default function StrudelDemo() {
   // Change jux(rev) states
   const handleJuxChange = (checked) => {
     setJux(checked);
+  };
+
+  // Change degrage status
+  const handleDegradeChange = (checked) => {
+    setDegrade(checked);
   };
 
   // Save to localStorage json
@@ -309,7 +365,8 @@ export default function StrudelDemo() {
           volume,
           speed,
           lpf,
-          jux
+          jux,
+          degrade
         );
         globalEditor.setCode(initialCode);
       }
@@ -326,14 +383,15 @@ export default function StrudelDemo() {
         volume,
         speed,
         lpf,
-        jux
+        jux,
+        degrade
       );
 
       globalEditor.setCode(newCode);
 
       globalEditor.evaluate();
     }
-  }, [tracks, volume, speed, lpf, jux]);
+  }, [tracks, volume, speed, lpf, jux, degrade]);
 
   return (
     <div className="px-3">
@@ -380,6 +438,8 @@ export default function StrudelDemo() {
                 onLpfChange={handleLpfChange}
                 jux={jux}
                 onJuxChange={handleJuxChange}
+                degrade={degrade}
+                onDegradeChange={handleDegradeChange}
                 onSave={handleSave}
                 onLoad={handleLoad}
               />

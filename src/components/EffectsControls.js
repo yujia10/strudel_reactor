@@ -1,9 +1,9 @@
-function EffectsControls({ jux, onJuxChange, lpf, onLpfChange }) {
+function EffectsControls({ jux, onJuxChange, lpf, onLpfChange, degrade, onDegradeChange }) {
   return (
     <>
       <div className="my-3">
         <div className="row row-cols-2 g-3">
-          {/* Mirror Effect */}
+          {/* Stereo Effect */}
           <div className="col d-flex align-items-center justify-content-between">
             <div className="form-check">
               <input
@@ -15,6 +15,22 @@ function EffectsControls({ jux, onJuxChange, lpf, onLpfChange }) {
               />
               <label className="form-check-label fw-semibold" htmlFor="rev">
                 Stereo Effect
+              </label>
+            </div>
+          </div>
+
+          {/* Glitch Effect */}
+          <div className="col d-flex align-items-center justify-content-between">
+            <div className="form-check">
+              <input
+                className="form-check-input me-2"
+                type="checkbox"
+                id="degrade"
+                checked={degrade}
+                onChange={(e) => onDegradeChange(e.target.checked)}
+              />
+              <label className="form-check-label fw-semibold" htmlFor="degrade">
+                Glitch Effect
               </label>
             </div>
           </div>
