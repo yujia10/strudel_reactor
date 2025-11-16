@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600&display=swap");
 
 .App {
   text-align: center;
@@ -6,7 +6,7 @@
 
 body {
   background-color: #0d0d0d !important;
-  color: #fff
+  color: #fff;
 }
 
 .App-logo {
@@ -44,39 +44,42 @@ body {
   }
 }
 
+/* Custom styles */
 h2 {
-  font-family: 'Chakra Petch', sans-serif;
+  font-family: "Chakra Petch", sans-serif;
   font-size: 2.2rem;
   font-weight: 600;
   color: #b9ff66;
   text-transform: uppercase;
 }
 button {
-  font-family: 'Chakra Petch', sans-serif;
+  font-family: "Chakra Petch", sans-serif;
   color: #b9ff66;
 }
 
-
-
-/* play buttons */
-
-.card.bg-dark {
-  background-color: #262626;
+.text-section {
+  height: 60vh;
+  overflow-y: auto;
 }
 
-.control-icon{
+/* play buttons */
+.card.bg-dark {
+  background-color: #262626 !important;
+}
+
+.control-icon {
   font-size: 3rem;
   color: #b9ff66;
   cursor: pointer;
   transition: transform 0.2s ease, color 0.2s ease;
 }
 
-.control-icon:hover{
+.control-icon:hover {
   transform: scale(1.1);
 }
 
 .status-pill {
-  background-color: #2a2a2a;
+  background-color: #1b1b1b;
   border-radius: 20px;
   padding: 6px 18px;
   font-weight: 500;
@@ -108,9 +111,9 @@ button {
 
 /* track controls */
 .form-check-input:checked {
-        background-color: #ff9900;
-        border-color: #ff9900;
-      }
+  background-color: #ff9900;
+  border-color: #ff9900;
+}
 
 /* sliders */
 .form-range::-webkit-slider-thumb {
@@ -126,7 +129,7 @@ button {
   box-shadow: none;
 }
 
-.preset-btn{
+.preset-btn {
   background-color: #2a2a2a;
   border: 2px solid #b9ff66;
   border-radius: 12px;

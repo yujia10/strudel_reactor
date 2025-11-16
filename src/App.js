@@ -42,8 +42,8 @@ const handleD3Data = (event) => {
   // console.log(event.detail);
   const array = event.detail;
   const numericArray = array
-    .map(str => extractValue(str, 'gain'))
-    .filter(n => !isNaN(n) && n > 0);
+    .map((str) => extractValue(str, "gain"))
+    .filter((n) => !isNaN(n) && n > 0);
   if (numericArray.length > 0) {
     updateD3(numericArray);
   }
@@ -51,12 +51,12 @@ const handleD3Data = (event) => {
 
 function updateD3(data) {
   const svg = d3.select("#d3-visualizer");
-  const width = 800;
-  const height = 200;
+  const width = svg.node().getBoundingClientRect().width;
+  const height = svg.node().getBoundingClientRect().height;
 
   if (svg.empty()) return;
 
-  const maxBars = 50;
+  const maxBars = 40;
   const barWidth = width / maxBars; // Fixed width
 
   // Pad with minimum values if data is insufficient
@@ -68,34 +68,33 @@ function updateD3(data) {
     paddedData[maxBars - displayData.length + i] = val;
   });
 
-  const yScale = d3.scaleLinear()
-    .domain([0.1, 2])
-    .range([0, height]);
+  const yScale = d3.scaleLinear().domain([0.1, 2]).range([0, height]);
 
-  const colorScale = d3.scaleLinear()
-    .domain([0.1, 2])
-    .range(["#00aaff", "#ff00aa"]);
+  const colorScale = d3
+    .scaleLinear()
+    .domain([0.1, 1, 2])
+    .range(["#e6ffcc", "#b9ff66", "#4caf50"]);
 
-const bars = svg.selectAll("rect")
-    .data(displayData);
+  const bars = svg.selectAll("rect").data(displayData);
 
-  bars.enter()
+  bars
+    .enter()
     .append("rect")
     .attr("x", (d, i) => i * barWidth)
     .attr("width", barWidth - 1)
     .attr("y", height)
     .attr("height", 0)
-    .attr("fill", d => colorScale(d))
+    .attr("fill", (d) => colorScale(d))
     .attr("opacity", 0.8)
     .merge(bars)
     .attr("x", (d, i) => i * barWidth)
     .attr("width", barWidth - 1)
-    .attr("fill", d => colorScale(d))
+    .attr("fill", (d) => colorScale(d))
     .transition()
-    .duration(300)
+    .duration(400)
     .ease(d3.easeCubicOut)
-    .attr("y", d => height - yScale(d))
-    .attr("height", d => yScale(d));
+    .attr("y", (d) => height - yScale(d))
+    .attr("height", (d) => yScale(d));
 
   bars.exit().remove();
 }
@@ -397,11 +396,9 @@ export default function StrudelDemo() {
   useEffect(() => {
     if (!hasRun.current) {
       d3.select("#d3-visualizer")
-      .attr("width", 800)
-      .attr("height", 200)
-      .style("background", "#1a1a1a")
-      .style("display", "block")
-      .style("border-radius", "8px");
+        .style("background", "#262626")
+        .style("display", "block")
+        .style("border-radius", "8px");
 
       document.addEventListener("d3Data", handleD3Data);
       console_monkey_patch();
@@ -446,7 +443,6 @@ export default function StrudelDemo() {
         globalEditor.setCode(initialCode);
       }
     }
-
   }, []);
 
   // Change tracks and effects dynamically
@@ -476,21 +472,23 @@ export default function StrudelDemo() {
         <div className="container-fluid">
           <div className="row">
             <div className="col-md-8">
-              {/* Preprocess text area */}
-              <div
-                style={{ maxHeight: "50vh", overflowY: "auto" }}
-                className="mb-3"
-              >
-                <PreprocessArea />
+              <div className="row mb-3">
+                <div className="col-6">
+                  <div className="text-section">
+                    <PreprocessArea />
+                  </div>
+                </div>
+
+                <div className="col-6">
+                  <div className="text-section">
+                    <div id="editor" />
+                    <div id="output" />
+                  </div>
+                </div>
               </div>
 
-              {/* output */}
-              <div
-                style={{ maxHeight: "50vh", overflowY: "auto" }}
-                className="mb-3"
-              >
-                <div id="editor" />
-                <div id="output" />
+              <div className="my-3 bg-dark">
+                <svg id="d3-visualizer" width="100%" height="25vh"></svg>
               </div>
             </div>
 
@@ -522,9 +520,6 @@ export default function StrudelDemo() {
             </div>
           </div>
         </div>
-       <div className="my-3">
-  <svg id="d3-visualizer" width="800" height="200"></svg>
-</div>
       </main>
     </div>
   );

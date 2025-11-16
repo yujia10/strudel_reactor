@@ -1,6 +1,6 @@
 function PreprocessArea(){
   return (
-    <textarea className="form-control" rows="15" id="proc" ></textarea>
+    <textarea className="form-control" style={{ height: "100%", resize: "none" }} id="proc" ></textarea>
   )
 }
 export default PreprocessArea;
