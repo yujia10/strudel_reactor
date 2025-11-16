@@ -84,7 +84,13 @@ button {
   padding: 6px 18px;
   font-weight: 500;
   font-size: 1rem;
+
+}
+.live-label {
   color: #b9ff66;
+}
+.off-label{
+  color: #999999;
 }
 
 /* process buttons */

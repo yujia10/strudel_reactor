@@ -280,7 +280,7 @@ function processText(source, tracks, volume, speed, lpf, jux, degrade) {
 
 export default function StrudelDemo() {
   const hasRun = useRef(false);
-
+  const [isPlaying, setIsPlaying] = useState(false);
   // Add tracks status
   const [tracks, setTracks] = useState({
     bassline: "ON",
@@ -338,12 +338,14 @@ export default function StrudelDemo() {
   const handlePlay = () => {
     if (globalEditor != null) {
       globalEditor.evaluate();
+      setIsPlaying(true);
     }
   };
 
   const handleStop = () => {
     if (globalEditor != null) {
       globalEditor.stop();
+      setIsPlaying(false);
     }
   };
 
@@ -498,7 +500,11 @@ export default function StrudelDemo() {
                 onPreprocess={handlePreprocess}
                 onProcAndPlay={handleProcAndPlay}
               />
-              <PlayButtons onPlay={handlePlay} onStop={handleStop} />
+              <PlayButtons
+                onPlay={handlePlay}
+                onStop={handleStop}
+                isPlaying={isPlaying}
+              />
 
               {/* DJ controls */}
               <DJControls
