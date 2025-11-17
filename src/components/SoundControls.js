@@ -13,6 +13,7 @@ function SoundControls({volume, onVolumeChange, speed, onSpeedChange}) {
           type="range"
           className="form-range"
           id="volumeRange"
+          value={volume}
           min="0"
           max="2"
           step="0.1"
@@ -30,6 +31,7 @@ function SoundControls({volume, onVolumeChange, speed, onSpeedChange}) {
           type="range"
           className="form-range"
           id="speedRange"
+          value={speed}
           min="0.5"
           max="1.5"
           step="0.1"

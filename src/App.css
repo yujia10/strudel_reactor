@@ -150,6 +150,13 @@ button {
   transform: scale(1.05);
 }
 
+/* alert */
+.alert-warning {
+  background-color: #1b1b1b;
+  border: none;
+  color: #ff9900;
+}
+
 /* accordion */
 .accordion-flush .accordion-item {
   background-color: #1b1b1b;

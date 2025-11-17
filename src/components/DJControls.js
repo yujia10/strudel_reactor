@@ -7,6 +7,7 @@ function DJControls({
   onTrackChange,
   onSave,
   onLoad,
+  alert,
   volume,
   onVolumeChange,
   speed,
@@ -70,6 +71,11 @@ function DJControls({
           Load
         </button>
       </div>
+         {alert && (
+        <div className="alert alert-warning text-end py-2 mt-2">
+          {alert}
+        </div>
+      )}
     </div>
   );
 }

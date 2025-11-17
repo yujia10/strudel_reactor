@@ -309,6 +309,9 @@ export default function StrudelDemo() {
   // Add degrade status
   const [degrade, setDegrade] = useState(false);
 
+  // Add alert status
+  const [alert, setAlert] = useState(null);
+
   //Preprocess controls
   const handlePreprocess = () => {
     let proc_text = document.getElementById("proc").value;
@@ -372,10 +375,13 @@ export default function StrudelDemo() {
   // Save to localStorage json
   const handleSave = () => {
     try {
-      localStorage.setItem("strudel-settings", JSON.stringify({ tracks }));
-      alert("Settings saved!");
+      localStorage.setItem(
+        "strudel-settings",
+        JSON.stringify({ tracks, volume, speed, lpf, jux, degrade })
+      );
+      setAlert("Settings saved successfully!");
     } catch (error) {
-      alert("Error saving settings");
+      setAlert("Error saving settings.");
     }
   };
 
@@ -386,12 +392,17 @@ export default function StrudelDemo() {
       if (saved) {
         const settings = JSON.parse(saved);
         setTracks(settings.tracks);
-        alert("Settings loaded");
+        setVolume(settings.volume);
+        setSpeed(settings.speed);
+        setLpf(settings.lpf);
+        setJux(settings.jux);
+        setDegrade(settings.degrade);
+        setAlert("Settings loaded successfully!");
       } else {
-        alert("No saved settings found!");
+        setAlert("No saved settings found.");
       }
     } catch (error) {
-      alert("Error loading settings");
+      setAlert("Error loading settings.");
     }
   };
 
@@ -522,6 +533,7 @@ export default function StrudelDemo() {
                 onDegradeChange={handleDegradeChange}
                 onSave={handleSave}
                 onLoad={handleLoad}
+                alert={alert}
               />
             </div>
           </div>
