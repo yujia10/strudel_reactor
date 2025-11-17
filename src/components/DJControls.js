@@ -27,7 +27,19 @@ function DJControls({
         speed={speed}
         onSpeedChange={onSpeedChange}
       />
-      <TrackControls tracks={tracks} onTrackChange={onTrackChange} />
+
+      {/* Track Controls */}
+      <div className="row row-cols-2 g-2 my-3">
+        {Object.keys(tracks).map((trackKey) => (
+          <TrackControls
+            key={trackKey}
+            trackKey={trackKey}
+            trackValue={tracks[trackKey]}
+            onTrackChange={onTrackChange}
+          />
+        ))}
+      </div>
+
       <div className="accordion accordion-flush mt-3" id="controlsAccordion">
         {/* Effects Controls */}
         <div className="accordion-item">
@@ -71,10 +83,8 @@ function DJControls({
           Load
         </button>
       </div>
-         {alert && (
-        <div className="alert alert-warning text-end py-2 mt-2">
-          {alert}
-        </div>
+      {alert && (
+        <div className="alert alert-warning text-end py-2 mt-2">{alert}</div>
       )}
     </div>
   );
