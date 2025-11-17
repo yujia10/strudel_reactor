@@ -1,6 +1,7 @@
 import TrackControls from "./TrackControls";
 import SoundControls from "./SoundControls";
-import EffectsControls from "./EffectsControls";
+import EffectControls from "./EffectControls";
+import EffectValueControls from "./EffectValueControls";
 
 function DJControls({
   tracks,
@@ -21,6 +22,7 @@ function DJControls({
 }) {
   return (
     <div className="card bg-dark text-light border-0 rounded-4 px-5 py-4 mt-3">
+      {/* Sound Controls */}
       <SoundControls
         volume={volume}
         onVolumeChange={onVolumeChange}
@@ -30,18 +32,18 @@ function DJControls({
 
       {/* Track Controls */}
       <div className="row row-cols-2 g-2 my-3">
-        {Object.keys(tracks).map((trackKey) => (
+        {Object.entries(tracks).map(([key, value]) => (
           <TrackControls
-            key={trackKey}
-            trackKey={trackKey}
-            trackValue={tracks[trackKey]}
+            key={key}
+            trackKey={key}
+            trackValue={value}
             onTrackChange={onTrackChange}
           />
         ))}
       </div>
 
+      {/* Advanced Effects */}
       <div className="accordion accordion-flush mt-3" id="controlsAccordion">
-        {/* Effects Controls */}
         <div className="accordion-item">
           <h2 className="accordion-header" id="effectControlsHeader">
             <button
@@ -62,19 +64,33 @@ function DJControls({
             data-bs-parent="#controlsAccordion"
           >
             <div className="accordion-body">
-              <EffectsControls
+             {/* Special effect Controls */}
+              <EffectControls
                 jux={jux}
                 onJuxChange={onJuxChange}
                 degrade={degrade}
                 onDegradeChange={onDegradeChange}
-                lpf={lpf}
-                onLpfChange={onLpfChange}
               />
+              {/* lpf value Controls */}
+              <div className="mb-3">
+                <div className="fw-semibold mb-2">LPF</div>
+                <div className="row row-cols-2 g-3">
+                  {Object.entries(lpf).map(([key, value]) => (
+                    <EffectValueControls
+                      key={key}
+                      effectKey={key}
+                      effectValue={value}
+                      onLpfChange={onLpfChange}
+                    />
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
+       {/* json save/load */}
       <div className="d-flex gap-3 mt-3 justify-content-end">
         <button className="preset-btn" onClick={onSave}>
           Save
