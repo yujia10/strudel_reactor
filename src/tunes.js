@@ -36,7 +36,7 @@ const arpeggiator2 = [
 ]
 
 
-const pattern = 0
+const pattern = 1
 const bass = 0
 
 bassline:
@@ -66,7 +66,7 @@ note(pick(arpeggiator1, "<0 1 2 3>/2"))
 drums:
 stack(
   s("tech:5")
-  .postgain(6)
+  .postgain(2.8)
   .pcurve(2)
   .pdec(1)
   .gain(1)
