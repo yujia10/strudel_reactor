@@ -2,7 +2,6 @@ import "./App.css";
 import { useState, useEffect, useRef } from "react";
 import { StrudelMirror } from "@strudel/codemirror";
 import { evalScope } from "@strudel/core";
-import { drawPianoroll } from "@strudel/draw";
 import { initAudioOnFirstClick } from "@strudel/webaudio";
 import { transpiler } from "@strudel/transpiler";
 import {
@@ -12,7 +11,9 @@ import {
 } from "@strudel/webaudio";
 import { registerSoundfonts } from "@strudel/soundfonts";
 import { stranger_tune } from "./tunes";
-import console_monkey_patch, { getD3Data } from "./console-monkey-patch";
+import console_monkey_patch from "./utils/console-monkey-patch";
+import { handleD3Data } from "./utils/visualization";
+import { processText } from "./utils/audioProcessing";
 import DJControls from "./components/DJControls";
 import PlayButtons from "./components/PlayButtons";
 import PreprocessArea from "./components/PreprocessArea";
@@ -20,263 +21,12 @@ import * as d3 from "d3";
 
 let globalEditor = null;
 
-function extractValue(input, parameter) {
-  if (!input) return 0;
-  const stringArray = input.split(/(\s+)/);
-
-  for (const item of stringArray) {
-    if (item.startsWith(`${parameter}:`)) {
-      const val = item.substring(parameter.length + 1);
-      return Number(val);
-    }
-  }
-  return 0;
-}
-
-function handleD3Data(event){
-  // console.log(event.detail);
-  const array = event.detail;
-  const numericArray = array
-    .map((str) => extractValue(str, "gain"))
-    .filter((n) => !isNaN(n) && n > 0);
-  if (numericArray.length > 0) {
-    updateD3(numericArray);
-  }
-};
-
-function updateD3(data) {
-  const svg = d3.select("#d3-visualizer");
-  const width = svg.node().getBoundingClientRect().width;
-  const height = svg.node().getBoundingClientRect().height;
-
-  if (svg.empty()) return;
-
-  const maxBars = 40;
-  const barWidth = width / maxBars; // Fixed width
-
-  // Pad with minimum values if data is insufficient
-  const paddedData = Array(maxBars).fill(0.1);
-  const displayData = data.slice(-maxBars);
-
-  // Place actual data at the end
-  displayData.forEach((val, i) => {
-    paddedData[maxBars - displayData.length + i] = val;
-  });
-
-  const yScale = d3.scaleLinear().domain([0.1, 2]).range([0, height]);
-
-  const colorScale = d3
-    .scaleLinear()
-    .domain([0.1, 1, 2])
-    .range(["#e6ffcc", "#b9ff66", "#4caf50"]);
-
-  const bars = svg.selectAll("rect").data(displayData);
-
-  bars
-    .enter()
-    .append("rect")
-    .attr("x", (d, i) => i * barWidth)
-    .attr("width", barWidth - 1)
-    .attr("y", height)
-    .attr("height", 0)
-    .attr("fill", (d) => colorScale(d))
-    .attr("opacity", 0.8)
-    .merge(bars)
-    .attr("x", (d, i) => i * barWidth)
-    .attr("width", barWidth - 1)
-    .attr("fill", (d) => colorScale(d))
-    .transition()
-    .duration(400)
-    .ease(d3.easeCubicOut)
-    .attr("y", (d) => height - yScale(d))
-    .attr("height", (d) => yScale(d));
-
-  bars.exit().remove();
-}
-
-// Mute selected track
-function muteTrack(text, trackName) {
-  const lines = text.split("\n");
-
-  // update target track status
-  const updatedLines = lines.map((line) => {
-    if (line.trim().startsWith(`${trackName}:`)) {
-      return line.replace(`${trackName}:`, `_${trackName}:`);
-    }
-    return line;
-  });
-
-  return updatedLines.join("\n");
-}
-
-// Adjust volume based on slider change
-function controlVolume(text, volume) {
-  let outputText = text;
-  let regex = /[a-zA-Z0-9_]+:\s*\n[\s\S]+?\r?\n(?=[a-zA-Z0-9_]*[:/])/gm;
-  let matches = [];
-  let m;
-
-  while ((m = regex.exec(outputText)) !== null) {
-    if (m.index === regex.lastIndex) {
-      regex.lastIndex++;
-    }
-    m.forEach((match, groupIndex) => {
-      matches.push(match);
-    });
-  }
-
-  let matches2 = matches.map((match) =>
-    match.replaceAll(
-      /(?<!post)gain\(([\d.]+)\)/g,
-      (match, captureGroup) => `gain(${captureGroup}*${volume})`
-    )
-  );
-
-  let replacedText = matches.reduce(
-    (text, original, i) => text.replaceAll(original, matches2[i]),
-    outputText
-  );
-
-  return replacedText;
-}
-
-function controlSpeed(text, speed) {
-  const regex = /setcps\(([\d./]+)\)/;
-  // find matched text
-  const match = text.match(regex);
-  if (!match) return text;
-
-  // get first number
-  const expression = match[1];
-  const parts = expression.split("/");
-
-  // replace bpm value
-  const baseBpm = parts[0];
-  parts[0] = `${baseBpm} * ${speed}`;
-
-  const newSetcps = `setcps(${parts.join("/")})`;
-
-  return text.replace(regex, newSetcps);
-}
-
-function controlLpf(text, trackName, value) {
-  if (!value) return text;
-  // Match track blocks
-  let regex = /[a-zA-Z0-9_]+:\s*\n[\s\S]+?\r?\n(?=[a-zA-Z0-9_]*[:/])/gm;
-  let matches = [];
-  let m;
-
-  while ((m = regex.exec(text)) !== null) {
-    if (m.index === regex.lastIndex) {
-      regex.lastIndex++;
-    }
-    matches.push(m[0]);
-  }
-  // Find target track block
-  const targetBlock = matches.find((block) =>
-    block.trim().startsWith(`${trackName}:`)
-  );
-
-  if (!targetBlock || !targetBlock.includes(".lpf(")) return text;
-  // Replace .lpf() in the block
-  const updatedBlock = targetBlock.replace(
-    /\.lpf\([\d.]+\)/g,
-    `.lpf(${value})`
-  );
-  // Replace original block
-  return text.replace(targetBlock, updatedBlock);
-}
-
-// Remove .jux(rev)
-function removeJuxRev(text) {
-  return text.replace(/\.jux\(rev\)/g, "");
-}
-
-// Add or delete .degrade()
-function controlDegrade(
-  text,
-  degrade,
-  targetTracks = ["bassline", "main_arp"]
-) {
-  if (!degrade) {
-    return text.replace(/\.degrade\(\)/g, "");
-  }
-
-  // add .degrade() for specified tracks
-  let outputText = text;
-  let regex = /[a-zA-Z0-9_]+:\s*\n[\s\S]+?\r?\n(?=[a-zA-Z0-9_]*[:/])/gm;
-  let matches = [];
-  let m;
-
-  while ((m = regex.exec(outputText)) !== null) {
-    if (m.index === regex.lastIndex) {
-      regex.lastIndex++;
-    }
-    matches.push(m[0]);
-  }
-
-  let matches2 = matches.map((match) => {
-    // Check target track
-    const isTargetTrack = targetTracks.some((trackName) =>
-      match.trim().startsWith(`${trackName}:`)
-    );
-
-    if (isTargetTrack && !match.includes(".degrade()")) {
-      // Add .degrade() as last line
-      return match.replace(/(\.[a-z]+\([^)]*\))(\s*)$/, "$1\n.degrade()$2");
-    }
-    return match;
-  });
-
-  let replacedText = matches.reduce(
-    (text, original, i) => text.replace(original, matches2[i]),
-    outputText
-  );
-
-  return replacedText;
-}
-
-// Preprocesses the source code
-function processText(source, tracks, volume, speed, lpf, jux, degrade) {
-  let text = source;
-
-  // search for track set to hush
-  for (let trackName in tracks) {
-    if (tracks[trackName] === "HUSH") {
-      text = muteTrack(text, trackName);
-    }
-  }
-
-  // Set global gain
-  if (volume !== 1) {
-    text = controlVolume(text, volume);
-  }
-
-  // Set global speed
-  if (speed !== 1) {
-    text = controlSpeed(text, speed);
-  }
-
-  // Set lpf
-  for (let trackName in lpf) {
-    text = controlLpf(text, trackName, lpf[trackName]);
-  }
-
-  // Control degrage effect
-  text = controlDegrade(text, degrade);
-
-  // Control jux(rev)
-  if (!jux) {
-    text = removeJuxRev(text);
-  }
-
-  return text;
-}
-
 export default function StrudelDemo() {
   const hasRun = useRef(false);
+
+  /* Status */
   const [isPlaying, setIsPlaying] = useState(false);
-  // Add tracks status
+  // Add track status
   const [tracks, setTracks] = useState({
     bassline: "ON",
     main_arp: "ON",
@@ -307,6 +57,7 @@ export default function StrudelDemo() {
   // Add alert status
   const [alert, setAlert] = useState(null);
 
+  /* Handlers */
   // Playback controls
   const handlePlay = () => {
     if (globalEditor != null) {
