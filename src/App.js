@@ -15,15 +15,10 @@ import { stranger_tune } from "./tunes";
 import console_monkey_patch, { getD3Data } from "./console-monkey-patch";
 import DJControls from "./components/DJControls";
 import PlayButtons from "./components/PlayButtons";
-import ProcButtons from "./components/ProcButtons";
 import PreprocessArea from "./components/PreprocessArea";
 import * as d3 from "d3";
 
 let globalEditor = null;
-
-// const handleD3Data = (event) => {
-//   console.log(event.detail);
-// };
 
 function extractValue(input, parameter) {
   if (!input) return 0;
@@ -38,7 +33,7 @@ function extractValue(input, parameter) {
   return 0;
 }
 
-const handleD3Data = (event) => {
+function handleD3Data(event){
   // console.log(event.detail);
   const array = event.detail;
   const numericArray = array
@@ -98,8 +93,8 @@ function updateD3(data) {
 
   bars.exit().remove();
 }
-// Mute selected track
 
+// Mute selected track
 function muteTrack(text, trackName) {
   const lines = text.split("\n");
 
@@ -312,34 +307,23 @@ export default function StrudelDemo() {
   // Add alert status
   const [alert, setAlert] = useState(null);
 
-  //Preprocess controls
-  const handlePreprocess = () => {
-    let proc_text = document.getElementById("proc").value;
-    let proc_text_replaced = processText(
-      proc_text,
-      tracks,
-      volume,
-      speed,
-      lpf,
-      jux,
-      degrade
-    );
-    if (globalEditor != null) {
-      globalEditor.setCode(proc_text_replaced);
-    }
-  };
-
-  //Preprocess and play
-  const handleProcAndPlay = () => {
-    if (globalEditor != null) {
-      handlePreprocess();
-      globalEditor.evaluate();
-    }
-  };
-
   // Playback controls
   const handlePlay = () => {
     if (globalEditor != null) {
+      // Preprocess text
+      let proc_text = document.getElementById("proc").value;
+      let proc_text_replaced = processText(
+        proc_text,
+        tracks,
+        volume,
+        speed,
+        lpf,
+        jux,
+        degrade
+      );
+      globalEditor.setCode(proc_text_replaced);
+
+      // Play music
       globalEditor.evaluate();
       setIsPlaying(true);
     }
@@ -506,11 +490,7 @@ export default function StrudelDemo() {
             </div>
 
             <div className="col-md-4">
-              {/* Buttons */}
-              <ProcButtons
-                onPreprocess={handlePreprocess}
-                onProcAndPlay={handleProcAndPlay}
-              />
+              {/* Playback Buttons */}
               <PlayButtons
                 onPlay={handlePlay}
                 onStop={handleStop}

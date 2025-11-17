@@ -5,7 +5,7 @@ import { TbMusicOff } from "react-icons/tb";
 
 function PlayButtons({ onPlay, onStop, isPlaying }){
   return (
-      <div className="card bg-dark text-light border-0 rounded-4 px-5 py-4 mt-3">
+      <div className="card bg-dark text-light border-0 rounded-4 px-5 py-4">
         <div className="d-flex justify-content-between align-items-center">
           <FaRegCircleStop className="control-icon" onClick={onStop}/>
           <FaRegCirclePlay className="control-icon" onClick={onPlay}/>
