@@ -176,3 +176,58 @@ export function processText(source, tracks, volume, speed, lpf, jux, degrade) {
 
   return text;
 }
+
+// Parse code to update control panel
+export function parseCodeToState(code, currentState) {
+  const newState = {
+    tracks: { ...currentState.tracks },
+    volume: currentState.volume,
+    speed: currentState.speed,
+    lpf: { ...currentState.lpf },
+    jux: currentState.jux,
+    degrade: currentState.degrade,
+  };
+
+  const lines = code.split('\n');
+
+  // Parse tracks
+  Object.keys(newState.tracks).forEach(trackName => {
+    const isMuted = lines.some(line =>
+      line.trim().startsWith(`_${trackName}:`)
+    );
+    newState.tracks[trackName] = isMuted ? 'HUSH' : 'ON';
+  });
+
+  // Parse volume
+  const volumeMatch = code.match(/gain\([\d.]+\s*\*\s*([\d.]+)\)/);
+  if (volumeMatch) {
+    newState.volume = parseFloat(volumeMatch[1]);
+  } else {
+    newState.volume = 1;
+  }
+
+  // Parse speed
+  const speedMatch = code.match(/setcps\((\d+)\s*\*\s*([\d.]+)\s*\/\s*\d+\s*\/\s*\d+\)/);
+  if (speedMatch) {
+    newState.speed = parseFloat(speedMatch[2]);
+  } else {
+    newState.speed = 1;
+  }
+
+  // Parse lpf
+  Object.keys(newState.lpf).forEach(trackName => {
+    const trackRegex = new RegExp(`${trackName}:[\\s\\S]*?\\.lpf\\((\\d+)\\)`, 'm');
+    const match = code.match(trackRegex);
+    if (match) {
+      newState.lpf[trackName] = parseInt(match[1]);
+    }
+  });
+
+  // Parse jux
+  newState.jux = code.includes('.jux(rev)');
+
+  // Parse degrade
+  newState.degrade = code.includes('.degrade()');
+
+  return newState;
+}

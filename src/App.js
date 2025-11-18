@@ -13,8 +13,9 @@ import { registerSoundfonts } from "@strudel/soundfonts";
 import { stranger_tune } from "./tunes";
 import console_monkey_patch from "./utils/console-monkey-patch";
 import { handleD3Data } from "./utils/visualization";
-import { processText } from "./utils/audioProcessing";
+import { processText, parseCodeToState } from "./utils/audioProcessing";
 import DJControls from "./components/DJControls";
+import ProcButtons from "./components/ProcButtons";
 import PlayButtons from "./components/PlayButtons";
 import PreprocessArea from "./components/PreprocessArea";
 import * as d3 from "d3";
@@ -58,12 +59,59 @@ export default function StrudelDemo() {
   const [alert, setAlert] = useState(null);
 
   /* Handlers */
+
+  //Preprocess code and sync to control panel
+  const handlePreprocess = () => {
+    const proc_text = document.getElementById("proc").value;
+
+    const parsedState = parseCodeToState(proc_text, {
+      tracks,
+      volume,
+      speed,
+      lpf,
+      jux,
+      degrade,
+    });
+
+    // Update all the states
+    setTracks(parsedState.tracks);
+    setVolume(parsedState.volume);
+    setSpeed(parsedState.speed);
+    setLpf(parsedState.lpf);
+    setJux(parsedState.jux);
+    setDegrade(parsedState.degrade);
+
+    // Process code with new states
+    const proc_text_replaced = processText(
+      proc_text,
+      parsedState.tracks,
+      parsedState.volume,
+      parsedState.speed,
+      parsedState.lpf,
+      parsedState.jux,
+      parsedState.degrade
+    );
+
+    if (globalEditor != null) {
+      globalEditor.setCode(proc_text_replaced);
+    }
+  };
+
+  //Preprocess and play
+  const handleProcAndPlay = () => {
+    handlePreprocess();
+    if (globalEditor != null) {
+      globalEditor.evaluate();
+      setIsPlaying(true);
+    }
+  };
+
   // Playback controls
   const handlePlay = () => {
     if (globalEditor != null) {
-      // Preprocess text
-      let proc_text = document.getElementById("proc").value;
-      let proc_text_replaced = processText(
+      // Get states from current settings
+      const proc_text = document.getElementById("proc").value;
+      const proc_text_replaced = processText(
         proc_text,
         tracks,
         volume,
@@ -74,7 +122,6 @@ export default function StrudelDemo() {
       );
       globalEditor.setCode(proc_text_replaced);
 
-      // Play music
       globalEditor.evaluate();
       setIsPlaying(true);
     }
@@ -241,6 +288,10 @@ export default function StrudelDemo() {
             </div>
 
             <div className="col-md-4">
+              <ProcButtons
+                onPreprocess={handlePreprocess}
+                onProcAndPlay={handleProcAndPlay}
+              />
               {/* Playback Buttons */}
               <PlayButtons
                 onPlay={handlePlay}

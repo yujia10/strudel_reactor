@@ -42,7 +42,7 @@ function DJControls({
         ))}
       </div>
 
-      {/* Advanced Effects */}
+      {/* Advanced Effects Accordion */}
       <div className="accordion accordion-flush mt-3" id="controlsAccordion">
         <div className="accordion-item">
           <h2 className="accordion-header" id="effectControlsHeader">
